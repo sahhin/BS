@@ -1,0 +1,3 @@
+C:/Users/Sahin/CLionProjects/Serienbrief/cmake-build-debug/CMakeFiles/Serienbrief.dir
+C:/Users/Sahin/CLionProjects/Serienbrief/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Sahin/CLionProjects/Serienbrief/cmake-build-debug/CMakeFiles/rebuild_cache.dir

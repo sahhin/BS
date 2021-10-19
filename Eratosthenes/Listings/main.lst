@@ -1,0 +1,429 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ;******************** (C) COPYRIGHT HAW-Hamburg ********
+                       ************************
+    2 00000000         ;* File Name          : main.s
+    3 00000000         ;* Author             : Alfred Lohmann
+    4 00000000         ;* Author             : Tobias Jaehnichen 
+    5 00000000         ;* Version            : V2.0
+    6 00000000         ;* Date               : 23.04.2017
+    7 00000000         ;* Description        : This is a simple main.
+    8 00000000         ;       : The output is send to UART 1. Open Serial Wind
+                       ow when 
+    9 00000000         ;       : when debugging. Select UART #1 in Serial Windo
+                       w selection.
+   10 00000000         ;       :
+   11 00000000         ;       : Replace this main with yours.
+   12 00000000         ;
+   13 00000000         ;*******************************************************
+                       ************************
+   14 00000000         
+   15 00000000                 EXTERN           Init_TI_Board ; Initialize the 
+                                                            serial line
+   16 00000000         
+   17 00000000         
+   18 00000000         ;********************************************
+   19 00000000         ; Data section, aligned on 4-byte boundery
+   20 00000000         ;********************************************
+   21 00000000         ;Make a new block of data
+   22 00000000                 AREA             MyData, DATA, align = 2 ;Align 
+                                                            data or code to a p
+                                                            articular memory bo
+                                                            undary, Typically 2
+                                                            ^N
+   23 00000000                 global           prims       ;TODO
+   24 00000000         
+   25 00000000 00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00       prims   SPACE            100         ;Allocate a zeroed 
+                                                            block of memory for
+                                                             prims, Platz für 1
+                                                            00 byte reserviert 
+                                                            wurde , mit nullen 
+                                                            initialisiert 
+   26 00000064 00000000 
+                       outpu   DCD              0           ;Allocate words (32
+                                                             bits) of data
+   27 00000068         
+   28 00000068         
+   29 00000068         ;********************************************
+   30 00000068         ; Code section, aligned on 8-byte boundery
+   31 00000068         ;********************************************
+   32 00000068         ;Make a new block of code
+   33 00000068                 AREA             |.text|, CODE, READONLY, ALIGN 
+= 3
+   34 00000000         
+   35 00000000                 extern           CountPrimNum ; C-Programm
+   36 00000000         
+   37 00000000         ;--------------------------------------------
+   38 00000000         ; main subroutine     
+   39 00000000         ;--------------------------------------------
+   40 00000000                 EXPORT           main [CODE]
+   41 00000000         
+   42 00000000         main    PROC                         ;Declare the start 
+                                                            of a procedure
+   43 00000000         
+   44 00000000 F04F 0006       mov              r0,#6
+   45 00000004 F04F 0104       mov              r1,#4
+   46 00000008 1809            adds             r1,r1,r0
+   47 0000000A BF34 230D       movcc            r3,#0xD
+   48 0000000E 240C            movcs            r4,#0xC
+   49 00000010         
+   50 00000010 4A25            LDR              r2,=prims
+   51 00000012 F04F 0101       mov              r1,#1
+   52 00000016 F04F 0000       mov              r0,#0
+   53 0000001A 7010            strb             r0,[r2]
+   54 0000001C 7050            strb             r0,[r2,#1]
+   55 0000001E         
+   56 0000001E         ;Forschleife zur Initialisierung Primzahlenarray
+   57 0000001E F04F 0302       mov              r3,#2
+   58 00000022 2B64    lini    cmp              r3,#100
+   59 00000024 D003            beq              liniend
+   60 00000026 54D1            strb             r1,[r2,r3]  ; Inhalt der r1 wur
+                                                            de unter adresse (b
+                                                            erechnet r2 + r3) g
+                                                            espeichert, x200000
+                                                            08 + x00000002 = x2
+                                                            000000A
+   61 00000028 F103 0301       add              r3,r3,#1    ;i++
+   62 0000002C E7F9            b                lini
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+   63 0000002E         liniend                              ;ende Forschleife z
+                                                            ur Initialisierung
+   64 0000002E         
+   65 0000002E         ;aeussere Forschleife zur Besetzung Primzahlenarray
+   66 0000002E F04F 0302       mov              r3,#2
+   67 00000032 2B0A    lallez  cmp              r3,#10
+   68 00000034 D50C            bpl              lallezend
+   69 00000036         ;if untersuchte Zahl == Primzahl
+   70 00000036 5CD4            ldrb             r4,[r2,r3]
+   71 00000038 428C            cmp              r4,r1       ;if prim
+   72 0000003A D106            bne              endifp
+   73 0000003C         ;Forschleife zum Loeschen von Vielfachen
+   74 0000003C EB03 0503       add              r5, r3,r3
+   75 00000040 2D64    lallep  cmp              r5,#100
+   76 00000042 D502            bpl              lallepend
+   77 00000044 5550            strb             r0,[r2,r5]
+   78 00000046 441D            add              r5,r5,r3    ;j=j+i
+   79 00000048 E7FA            b                lallep
+   80 0000004A         lallepend                            ;ende Forschleife z
+                                                            u Loeschen
+   81 0000004A         endifp                               ;ende if untersucht
+                                                            e Zahl == Primzahl
+   82 0000004A F103 0301       add              r3,r3,#1    ;i++
+   83 0000004E E7F0            b                lallez
+   84 00000050         lallezend                            ; ende aeussere For
+                                                            schleife zur Besetz
+                                                            ung Primzahlenarray
+                                                            
+   85 00000050         
+   86 00000050         ;#######################################################
+                       ##############
+   87 00000050         
+   88 00000050         ; START PRIMZAHLEN ZAEHLEN
+   89 00000050         
+   90 00000050         ;C-Unterprogramm
+   91 00000050 F04F 0014       mov              r0, #20
+   92 00000054 F04F 011E       mov              r1, #30
+   93 00000058 4A13            ldr              r2, =prims
+   94 0000005A F7FF FFFE       BL               CountPrimNum ; rufen Unterprogr
+                                                            amm auf
+   95 0000005E         
+   96 0000005E F04F 0032       mov              r0, #50
+   97 00000062 F04F 0150       mov              r1, #80
+   98 00000066 4A10            ldr              r2, =prims
+   99 00000068 F7FF FFFE       BL               CountPrimNum ; rufen Unterprogr
+                                                            amm auf
+  100 0000006C         
+  101 0000006C         ;ASM-Unterprogramm
+  102 0000006C F04F 0014       mov              r0, #20     ;Parameter Anfang
+  103 00000070 F04F 011E       mov              r1, #30     ;Parameter Ende
+  104 00000074 4A0C            ldr              r2, =prims  ;Prim-Array
+  105 00000076 F000 F808       bl               CountPrimNumAsm ; rufe Unterpro
+                                                            gramm auf
+  106 0000007A         
+  107 0000007A F04F 0032       mov              r0, #50     ;Parameter Anfang
+  108 0000007E F04F 0150       mov              r1, #80     ;Parameter Ende
+  109 00000082 4A09            ldr              r2, =prims  ;Prim-Array
+  110 00000084 F000 F801       bl               CountPrimNumAsm ; rufe Unterpro
+                                                            gramm auf
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+  111 00000088         
+  112 00000088 E7FE    forever b                forever     ; nowhere to retun 
+                                                            if main ends
+  113 0000008A                 ENDP                         ; Designate the end
+                                                             of a procedure
+  114 0000008A         
+  115 0000008A         CountPrimNumAsm                      ;Unterprogramm
+  116 0000008A F04F 0300       mov              r3, #0      ; Prim-Counter zuru
+                                                            ecksetzen
+  117 0000008E 4410            add              r0, r2, r0  ; Start
+  118 00000090 4411            add              r1, r2, r1  ;Ende
+  119 00000092         loop
+  120 00000092 4288            cmp              r0,r1       ;Vergleiche Start- 
+                                                            und Endadresse
+  121 00000094         
+  122 00000094 D006            beq              endProgramm1 ;Wenn letzter Verg
+                                                            leich equal, Progra
+                                                            mm beenden
+  123 00000096         
+  124 00000096 7802            ldrb             r2, [r0]    ;Lade 1 Byte aus Pr
+                                                            imzahl-Array nach r
+                                                            7
+  125 00000098         
+  126 00000098 2A01            cmp              r2, #1      ;Ist r7 eine Primza
+                                                            hl?
+  127 0000009A         
+  128 0000009A BF08 1C5B       addeq            r3, r3, #1  ;Wenn ja, erhoehe C
+                                                            ounter +1
+  129 0000009E         
+  130 0000009E F100 0001       add              r0, r0, #1  ;Erhoehe Start-Adre
+                                                            sse +1
+  131 000000A2 E7F6            b                loop        ;Zurueck zum Schlei
+                                                            fenanfang
+  132 000000A4         
+  133 000000A4         endProgramm1                         ;Marker für Ende er
+                                                            stes ASM Unterprogr
+                                                            amm
+  134 000000A4         
+  135 000000A4 4770            bx               lr
+  136 000000A6         
+  137 000000A6 00 00           ALIGN
+  138 000000A8                 END                          ;Designate the end 
+                                                            of a source file
+              00000000 
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M3 --apcs=interw
+ork --depend=.\objects\main_1.d -o.\objects\main_1.o -IC:\Keil_v5\ARM\RV31\INC 
+-IC:\Keil_v5\ARM\CMSIS\Include -IC:\Keil_v5\ARM\INC\ST\STM32F10x --predefine="_
+_EVAL SETA 1" --predefine="__UVISION_VERSION SETA 532" --list=.\listings\main.l
+st main.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+MyData 00000000
+
+Symbol: MyData
+   Definitions
+      At line 22 in file main.s
+   Uses
+      None
+Comment: MyData unused
+outpu 00000064
+
+Symbol: outpu
+   Definitions
+      At line 26 in file main.s
+   Uses
+      None
+Comment: outpu unused
+prims 00000000
+
+Symbol: prims
+   Definitions
+      At line 25 in file main.s
+   Uses
+      At line 23 in file main.s
+      At line 50 in file main.s
+      At line 93 in file main.s
+      At line 98 in file main.s
+      At line 104 in file main.s
+      At line 109 in file main.s
+
+3 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.text 00000000
+
+Symbol: .text
+   Definitions
+      At line 33 in file main.s
+   Uses
+      None
+Comment: .text unused
+CountPrimNumAsm 0000008A
+
+Symbol: CountPrimNumAsm
+   Definitions
+      At line 115 in file main.s
+   Uses
+      At line 105 in file main.s
+      At line 110 in file main.s
+
+endProgramm1 000000A4
+
+Symbol: endProgramm1
+   Definitions
+      At line 133 in file main.s
+   Uses
+      At line 122 in file main.s
+Comment: endProgramm1 used once
+endifp 0000004A
+
+Symbol: endifp
+   Definitions
+      At line 81 in file main.s
+   Uses
+      At line 72 in file main.s
+Comment: endifp used once
+forever 00000088
+
+Symbol: forever
+   Definitions
+      At line 112 in file main.s
+   Uses
+      At line 112 in file main.s
+Comment: forever used once
+lallep 00000040
+
+Symbol: lallep
+   Definitions
+      At line 75 in file main.s
+   Uses
+      At line 79 in file main.s
+Comment: lallep used once
+lallepend 0000004A
+
+Symbol: lallepend
+   Definitions
+      At line 80 in file main.s
+   Uses
+      At line 76 in file main.s
+Comment: lallepend used once
+lallez 00000032
+
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+Symbol: lallez
+   Definitions
+      At line 67 in file main.s
+   Uses
+      At line 83 in file main.s
+Comment: lallez used once
+lallezend 00000050
+
+Symbol: lallezend
+   Definitions
+      At line 84 in file main.s
+   Uses
+      At line 68 in file main.s
+Comment: lallezend used once
+lini 00000022
+
+Symbol: lini
+   Definitions
+      At line 58 in file main.s
+   Uses
+      At line 62 in file main.s
+Comment: lini used once
+liniend 0000002E
+
+Symbol: liniend
+   Definitions
+      At line 63 in file main.s
+   Uses
+      At line 59 in file main.s
+Comment: liniend used once
+loop 00000092
+
+Symbol: loop
+   Definitions
+      At line 119 in file main.s
+   Uses
+      At line 131 in file main.s
+Comment: loop used once
+main 00000000
+
+Symbol: main
+   Definitions
+      At line 42 in file main.s
+   Uses
+      At line 40 in file main.s
+Comment: main used once
+13 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+External symbols
+
+CountPrimNum 00000000
+
+Symbol: CountPrimNum
+   Definitions
+      At line 35 in file main.s
+   Uses
+      At line 94 in file main.s
+      At line 99 in file main.s
+
+Init_TI_Board 00000000
+
+Symbol: Init_TI_Board
+   Definitions
+      At line 15 in file main.s
+   Uses
+      None
+Comment: Init_TI_Board unused
+2 symbols
+352 symbols in table
